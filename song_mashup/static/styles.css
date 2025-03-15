@@ -1,0 +1,145 @@
+/* Additional custom styles for the Mashup Generator */
+
+:root {
+    --primary-color: #6d28d9;
+    --primary-dark: #5b21b6;
+    --primary-light: #8b5cf6;
+    --bg-dark: #121212;
+    --bg-card: #1e1e1e;
+    --bg-input: #2d2d2d;
+    --text-primary: #f8f9fa;
+    --text-secondary: #aaa;
+}
+
+/* Wave animation for loading */
+.wave-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+}
+
+.wave {
+    width: 5px;
+    height: 40px;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+    margin: 0 3px;
+    border-radius: 20px;
+    animation: wave 1s linear infinite;
+}
+
+.wave:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.wave:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.wave:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.wave:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.wave:nth-child(6) {
+    animation-delay: 0.5s;
+}
+
+.wave:nth-child(7) {
+    animation-delay: 0.6s;
+}
+
+.wave:nth-child(8) {
+    animation-delay: 0.7s;
+}
+
+@keyframes wave {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Custom button styles */
+.btn-gradient {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+    background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Tooltip custom styles */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--primary-dark);
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Custom audio player styling */
+audio::-webkit-media-controls-panel {
+    background-color: var(--bg-input);
+}
+
+audio::-webkit-media-controls-play-button {
+    background-color: var(--primary-color);
+    border-radius: 50%;
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+    color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .card {
+        margin-bottom: 20px;
+    }
+    
+    .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+} 

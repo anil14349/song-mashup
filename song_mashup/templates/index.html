@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Song Mashup Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 15px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .card-header {
+            background-color: #6d28d9;
+            color: white;
+            border-top-left-radius: 15px !important;
+            border-top-right-radius: 15px !important;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #6d28d9;
+            border-color: #5b21b6;
+        }
+        .btn-primary:hover {
+            background-color: #5b21b6;
+            border-color: #4c1d95;
+        }
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+        .file-upload-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background-color: #2d2d2d;
+            border: 2px dashed #6d28d9;
+            border-radius: 10px;
+            color: #aaa;
+            transition: all 0.3s;
+        }
+        .file-upload-label.active {
+            background-color: #3a3a3a;
+            border-color: #8b5cf6;
+            color: #fff;
+        }
+        .file-list {
+            margin-top: 15px;
+        }
+        .file-item {
+            background-color: #2d2d2d;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-remove {
+            cursor: pointer;
+            color: #ff4d4d;
+        }
+        .ratio-slider {
+            width: 100%;
+        }
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .result-container {
+            margin-top: 20px;
+            display: none;
+        }
+        audio {
+            width: 100%;
+            border-radius: 30px;
+            background-color: #2d2d2d;
+        }
+        #waveform {
+            width: 100%;
+            height: 80px;
+            margin-top: 20px;
+            background-color: #2d2d2d;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="my-2 text-center">AI Song Mashup Generator</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead text-center mb-4">
+                    Upload 2-3 songs and our AI will create a unique mashup blending them together.
+                </p>
+                
+                <form id="upload-form">
+                    <div class="mb-4">
+                        <div class="file-upload">
+                            <div class="file-upload-label" id="drop-area">
+                                <div class="text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-cloud-arrow-up mb-2" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/>
+                                        <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z"/>
+                                    </svg>
+                                    <h5>Drag & drop audio files here</h5>
+                                    <p class="text-muted">or click to browse (MP3, WAV, FLAC)</p>
+                                </div>
+                            </div>
+                            <input type="file" accept="audio/*" multiple class="file-upload-input" id="file-input">
+                        </div>
+                        
+                        <div class="file-list" id="file-list">
+                            <!-- Files will be listed here -->
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4" id="blend-settings">
+                        <h5 class="mb-3">Blend Settings</h5>
+                        <div id="ratio-controls">
+                            <!-- Sliders will be added dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5" id="generate-btn" disabled>
+                            Generate Mashup
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="progress-container" id="progress-container">
+                    <h5 class="mb-3">Processing Your Mashup...</h5>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <p class="text-center text-muted mt-2">
+                        This may take several minutes depending on the length of your tracks.
+                    </p>
+                </div>
+                
+                <div class="result-container" id="result-container">
+                    <h5 class="mb-3">Your AI Mashup is Ready!</h5>
+                    <div id="waveform"></div>
+                    <div class="mt-3">
+                        <audio controls id="audio-player"></audio>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="#" class="btn btn-primary" id="download-btn">Download Mashup</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                How It Works
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li class="mb-2">Upload 2-3 songs in common audio formats (MP3, WAV, FLAC)</li>
+                    <li class="mb-2">Our AI analyzes the musical elements of each track (tempo, key, melody)</li>
+                    <li class="mb-2">Advanced AI models blend the tracks together while maintaining musical coherence</li>
+                    <li class="mb-2">Download your unique mashup to share or enjoy</li>
+                </ol>
+                <p class="text-muted mt-3">
+                    This application uses cutting-edge AI models like MusicBERT and Suno Bark to analyze and generate music.
+                    The entire process happens in the cloud, so no special hardware is required.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('upload-form');
+            const fileInput = document.getElementById('file-input');
+            const fileList = document.getElementById('file-list');
+            const dropArea = document.getElementById('drop-area');
+            const generateBtn = document.getElementById('generate-btn');
+            const ratioControls = document.getElementById('ratio-controls');
+            const progressContainer = document.getElementById('progress-container');
+            const resultContainer = document.getElementById('result-container');
+            const audioPlayer = document.getElementById('audio-player');
+            const downloadBtn = document.getElementById('download-btn');
+            
+            let files = [];
+            let currentJobId = null;
+            
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('active');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('active');
+            }
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const newFiles = dt.files;
+                handleFiles(newFiles);
+            }
+            
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            
+            function handleFiles(newFiles) {
+                if (files.length + newFiles.length > 3) {
+                    alert('You can only upload up to 3 files');
+                    return;
+                }
+                
+                for (let i = 0; i < newFiles.length; i++) {
+                    if (!newFiles[i].type.startsWith('audio/')) {
+                        alert('Please upload only audio files');
+                        continue;
+                    }
+                    files.push(newFiles[i]);
+                }
+                
+                updateFileList();
+                updateRatioControls();
+                updateGenerateButton();
+            }
+            
+            function updateFileList() {
+                fileList.innerHTML = '';
+                
+                files.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <span>${file.name}</span>
+                        <span class="file-remove" data-index="${index}">×</span>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+                
+                document.querySelectorAll('.file-remove').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        files.splice(index, 1);
+                        updateFileList();
+                        updateRatioControls();
+                        updateGenerateButton();
+                    });
+                });
+            }
+            
+            function updateRatioControls() {
+                ratioControls.innerHTML = '';
+                
+                files.forEach((file, index) => {
+                    const sliderContainer = document.createElement('div');
+                    sliderContainer.className = 'mb-3';
+                    sliderContainer.innerHTML = `
+                        <label class="form-label">${file.name}</label>
+                        <input type="range" class="form-range ratio-slider" min="0" max="2" step="0.1" value="1.0" data-index="${index}">
+                        <div class="d-flex justify-content-between">
+                            <small>Less</small>
+                            <small>Default</small>
+                            <small>More</small>
+                        </div>
+                    `;
+                    ratioControls.appendChild(sliderContainer);
+                });
+            }
+            
+            function updateGenerateButton() {
+                generateBtn.disabled = files.length < 2 || files.length > 3;
+            }
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (files.length < 2 || files.length > 3) {
+                    alert('Please upload 2-3 audio files');
+                    return;
+                }
+                
+                // Collect blend ratios
+                const ratios = [];
+                document.querySelectorAll('.ratio-slider').forEach(slider => {
+                    ratios.push(slider.value);
+                });
+                
+                const formData = new FormData();
+                files.forEach(file => {
+                    formData.append('files', file);
+                });
+                formData.append('blend_ratio', ratios.join(','));
+                
+                // Show progress
+                form.style.display = 'none';
+                progressContainer.style.display = 'block';
+                
+                try {
+                    const response = await fetch('/upload/', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Upload failed');
+                    }
+                    
+                    const data = await response.json();
+                    currentJobId = data.job_id;
+                    
+                    // Poll for status
+                    checkStatus();
+                    
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                    form.style.display = 'block';
+                    progressContainer.style.display = 'none';
+                }
+            });
+            
+            async function checkStatus() {
+                if (!currentJobId) return;
+                
+                try {
+                    const response = await fetch(`/status/${currentJobId}`);
+                    if (!response.ok) {
+                        throw new Error('Status check failed');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'completed') {
+                        // Mashup is ready
+                        progressContainer.style.display = 'none';
+                        resultContainer.style.display = 'block';
+                        
+                        // Set audio source
+                        audioPlayer.src = `/download/${currentJobId}`;
+                        downloadBtn.href = `/download/${currentJobId}`;
+                        
+                    } else if (data.status === 'processing') {
+                        // Check again in 5 seconds
+                        setTimeout(checkStatus, 5000);
+                    }
+                    
+                } catch (error) {
+                    alert('Error checking status: ' + error.message);
+                    form.style.display = 'block';
+                    progressContainer.style.display = 'none';
+                }
+            }
+            
+            // Reset form button
+            document.getElementById('reset-btn')?.addEventListener('click', function() {
+                files = [];
+                updateFileList();
+                updateRatioControls();
+                updateGenerateButton();
+                form.style.display = 'block';
+                progressContainer.style.display = 'none';
+                resultContainer.style.display = 'none';
+            });
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
